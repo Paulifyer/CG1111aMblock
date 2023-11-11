@@ -248,16 +248,6 @@ void loop() {
   {
     nudgeLeft();
   }
-  moveByColor('R');
-  delay(500);
-  moveByColor('G');
-  delay(500);
-  moveByColor('O');
-  delay(500);
-  moveByColor('P');
-  delay(500);
-  moveByColor('B');
-  delay(500);
   // lineSensor();
   // moveForward();
   // int leftDist = checkDistanceUR();
