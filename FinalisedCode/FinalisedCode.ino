@@ -20,9 +20,9 @@ uint8_t motorSpeed = 255;
 
 //floats to hold colour arrays
 float colourArray[] = { 0, 0, 0 };
-float whiteArray[] = { 976, 993, 952 };
-float blackArray[] = { 945, 973, 832 };
-float greyDiff[] = { 31, 20, 120 };
+float whiteArray[] = { 977, 990, 959 };
+float blackArray[] = { 942, 972, 847 };
+float greyDiff[] = { 35, 18, 112 };
 char colourStr[3][5] = { "R = ", "G = ", "B = " };
 
 void set_output() {
@@ -107,6 +107,10 @@ rightMotor.stop(); // Stop right motor
 
 char check_colour(float colourArray[])
 {
+  if (colourArray[0] > 200 && colourArray[1] > 200 && colourArray[2] > 200)
+  {
+    return 'W';
+  }
   if (colourArray[0] > colourArray[1] && colourArray[0] > colourArray[2])
   {
     if (colourArray[1] < 100 && colourArray[2] < 100 && colourArray[1] - colourArray[2] <= 10) 
@@ -128,7 +132,7 @@ char check_colour(float colourArray[])
   } 
   else if (colourArray[2] > colourArray[0] && colourArray[2] > colourArray[1])
   {
-    if (colourArray[0] - colourArray[1] > 50)
+    if (colourArray[0] - colourArray[1] > 40)
     {
       return 'P';
     }
@@ -166,6 +170,10 @@ void moveByColor(char color)
     delay(500);
     turnRight();
   }
+  else if(color == 'W')
+  {
+    stopMotor();
+  }
 }
 
 void colourSensor()
@@ -189,7 +197,7 @@ void colourSensor()
    Serial.println(int(colourArray[c]));  //show the value for the current colour LED, which corresponds to either the R, G or B of the RGB code
  }
  Serial.println(check_colour(colourArray));
-//  moveByColor(check_colour(colourArray));
+ moveByColor(check_colour(colourArray));
 }
 
 void lineSensor() {
@@ -199,11 +207,11 @@ if (sensorState == S1_IN_S2_IN)
   stopMotor();
   colourSensor();
 }
-else if (sensorState == S1_IN_S2_OUT) {
+else if (sensorState == S1_OUT_S2_IN) {
     leftMotor.run(-100); // Left wheel stops
     rightMotor.run(0); // Right wheel go forward
 }
-else if (sensorState == S1_OUT_S2_IN) {
+else if (sensorState == S1_IN_S2_OUT) {
     leftMotor.run(0); // Left wheel go forward
     rightMotor.run(100); // Right wheel stops    
 }
@@ -238,24 +246,28 @@ void setup() {
   Serial.begin(9600);
   // setBalance();             //calibration
   led.show();  //Check Indicator -- ON after Calibration
+  delay(5000);
 }
 void loop() {
   float ambient = 1024 - measureAmbient();
-  float IR1 = 1024 - measureIR();
+  Serial.println(ambient);
+  float IR1 = measureIR();
+  Serial.println(IR1);
   delay(500);
-  float IR2 = 1024 - measureIR();
-  if (IR1 - IR2 > 50 || IR2 - IR1 > 50)
+  if (IR1 < 100)
   {
-    nudgeLeft();
+    Serial.println("Nudging Left");
+    // nudgeLeft();
   }
-  // lineSensor();
-  // moveForward();
-  // int leftDist = checkDistanceUR();
-  // Serial.println(leftDist);
-  // if (leftDist < 7)
-  // {
-  //   nudgeRight();
-  // }
+  lineSensor();
+  moveForward();
+  int leftDist = checkDistanceUR();
+  Serial.println(leftDist);
+  if (leftDist <= 7 && leftDist > 0)
+  {
+    Serial.println("Nudging Right");
+    nudgeRight();
+  }
 
 }
 void setBalance() {
